@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+ENV/
+*.egg-info/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Node
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# Environment variables & secrets (NEVER COMMIT)
+.env
+.env.local
+.env.production
+!.env.example
+
+# IDE / OS
+.vscode/
+.idea/
+Thumbs.db
+Desktop.ini
+*.log

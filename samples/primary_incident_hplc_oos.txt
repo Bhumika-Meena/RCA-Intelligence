@@ -1,0 +1,39 @@
+DEVIATION / QUALITY INCIDENT REPORT
+Report No: DEV-2026-0842
+Facility: API Manufacturing Block B, Line 3
+Unit Operation: Final Crystallization & Isolation
+Product: Atorvastatin Calcium Trihydrate API
+Batch Number: ATC-2026-B089
+Lot Size: 450.0 kg
+Date of Incident: October 22, 2026, 04:15 IST
+Reported By: Rajesh Sharma (Production Lead, Shift B)
+QA Reviewer: Dr. Ananya Iyer (Senior QA Specialist)
+Severity Classification: Critical (Direct API Quality Impact)
+
+1. INCIDENT DESCRIPTION:
+During release testing of Atorvastatin Calcium Trihydrate API (Batch ATC-2026-B089), Quality Control reported an Out-of-Specification (OOS) result for Related Substance Impurity D (diastereomer).
+- Specification Limit: Not More Than (NMT) 0.15% w/w (as per Pharmacopeial Release Specification Spec-ATC-004 Rev 5).
+- QC HPLC Assay Result: 0.38% w/w (Sample 1), 0.37% w/w (Sample 2 re-injection).
+The batch failed release criteria. QC Phase 1 laboratory investigation confirmed no laboratory analytical error: HPLC system suitability criteria passed, column performance (USP tailing < 1.5, theoretical plates > 5000) was verified, standard preparation showed 99.8% recovery, and no chromatographic integration artifacts were observed. The deviation was re-directed to manufacturing operations for manufacturing root cause investigation.
+
+2. IMMEDIATE CONTAINMENT ACTIONS TAKEN:
+- Batch ATC-2026-B089 immediately placed under physical and electronic QA quarantine (Quarantine Tag #QT-2026-441).
+- Crystallization Reactor CR-302 locked out pending engineering inspection.
+- Downstream micronization and primary packaging of this batch halted.
+- Preceding Batch ATC-2026-B088 and subsequent Batch ATC-2026-B090 placed on precautionary QA hold.
+
+3. PROCESS DATA & PRELIMINARY OBSERVATIONS:
+- Reaction Stage: Ethyl ester hydrolysis and subsequent calcium salt precipitation in Crystallization Vessel CR-302.
+- Solvent mixture: Methanol/Water/Tetrahydrofuran (Lot #TH-8821).
+- Temperature Sensor TE-302 showed nominal 45°C throughout dissolution, but SCADA historical trends reveal temperature fluctuations between 42°C and 58°C during anti-solvent addition (01:30 - 02:45 IST).
+- Heating jacket control valve (TCV-302) exhibited pneumatic hunting (stick-slip behavior) according to utility logs.
+- Agitator speed was set at 65 RPM (Standard Recipe calls for 70 ± 2 RPM). Operator noted visual vortex instability due to variable motor frequency drive (VFD) hunting.
+- Addition rate of anti-solvent (purified water) was recorded manually at 3.5 L/min instead of recipe setpoint of 2.0 ± 0.2 L/min due to bypass flowmeter usage when primary mass flow meter FM-302 displayed an intermittent error code E-14.
+- Raw material CoA for Methanol Lot #ME-2026-11 showed moisture content of 0.08% (within NMT 0.10% specification).
+- Batch manufacturing record (BMR) entry for anti-solvent addition step was signed retroactively by the night shift operator at the end of the shift.
+
+4. INVESTIGATION SCOPE & UNRESOLVED QUESTIONS:
+- Temperature transmitter calibration certificate for TE-302 is due for re-certification next week (last calibrated 11 months ago).
+- Root cause of flow meter FM-302 error E-14 has not yet been investigated by the instrumentation maintenance team.
+- Need to determine whether the elevated localized temperature (up to 58°C) combined with rapid anti-solvent addition catalyzed the epimerization/degradation pathway producing Impurity D.
+- Raw chromatograms from preceding 3 batches need comparative overlay to evaluate if Impurity D was creeping upward in prior runs.
