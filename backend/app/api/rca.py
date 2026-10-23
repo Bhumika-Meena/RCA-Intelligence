@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, status
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, Request, status
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from app.core.database import get_db
@@ -22,32 +22,39 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/rca", tags=["Root Cause Analysis"])
 
 @router.post("/analyze", response_model=AnalyzeResponse)
-async def analyze_incident(
-    request: Optional[AnalyzeTextRequest] = None,
-    file: Optional[UploadFile] = File(None),
-    text: Optional[str] = Form(None),
-    source_type: Optional[str] = Form(None)
-):
+async def analyze_incident(raw_request: Request):
     """
     Analyze raw incident source material (text, email, or digital PDF).
+    Accepts both JSON payloads and multipart/form-data file uploads.
     Executes the multi-stage LangGraph AI workflow using Groq.
     Returns structured incident facts, 5 Whys, 6M Fishbone, missing evidence, root causes, and CAPAs.
     """
+    content_type = raw_request.headers.get("content-type", "")
     raw_content = ""
     inferred_source_type = "pasted_text"
     file_name = None
 
-    if file:
-        file_name = file.filename
-        inferred_source_type = "pdf" if (file_name and file_name.lower().endswith(".pdf")) else "document"
-        raw_content = await extract_text_from_upload(file)
-    elif text:
-        raw_content = normalize_text(text)
-        inferred_source_type = source_type or "pasted_text"
-    elif request and request.text:
-        raw_content = normalize_text(request.text)
-        inferred_source_type = request.source_type or "pasted_text"
+    if "multipart/form-data" in content_type:
+        form = await raw_request.form()
+        file_obj = form.get("file")
+        text_field = form.get("text")
+        src_type_field = form.get("source_type")
+        if file_obj and hasattr(file_obj, "filename") and file_obj.filename:
+            file_name = file_obj.filename
+            inferred_source_type = "pdf" if file_name.lower().endswith(".pdf") else "document"
+            raw_content = await extract_text_from_upload(file_obj)
+        elif text_field:
+            raw_content = normalize_text(str(text_field))
+            inferred_source_type = str(src_type_field or "pasted_text")
     else:
+        try:
+            body = await raw_request.json()
+            raw_content = normalize_text(body.get("text", ""))
+            inferred_source_type = body.get("source_type", "pasted_text")
+        except Exception:
+            raw_content = ""
+
+    if not raw_content:
         raise HTTPException(
             status_code=400,
             detail="No incident material provided. Please provide text or upload a text-based PDF."
