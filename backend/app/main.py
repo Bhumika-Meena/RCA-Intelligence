@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.api.health import router as health_router
+from app.api.rca import router as rca_router
 
 app = FastAPI(
     title="AIVOA RCA Intelligence API",
@@ -20,6 +21,7 @@ app.add_middleware(
 
 # Mount routes
 app.include_router(health_router, prefix="/api", tags=["System"])
+app.include_router(rca_router, prefix="/api", tags=["Root Cause Analysis"])
 
 if __name__ == "__main__":
     import uvicorn
