@@ -88,6 +88,7 @@ class SaveInvestigationRequest(BaseModel):
     capa_actions: List[CapaItem] = Field(default_factory=list)
 
 class UpdateInvestigationRequest(BaseModel):
+    deviation_number: Optional[str] = None
     title: Optional[str] = None
     facility: Optional[str] = None
     unit_operation: Optional[str] = None

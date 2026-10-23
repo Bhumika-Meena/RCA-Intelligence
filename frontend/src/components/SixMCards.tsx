@@ -121,7 +121,7 @@ export const SixMCards: React.FC = () => {
                 <div className="space-y-1.5 min-h-[50px]">
                   {items.length === 0 ? (
                     <span className="text-[11px] text-slate-400 italic block py-1">
-                      No factors identified
+                      No contributing factors observed in available evidence
                     </span>
                   ) : (
                     items.map((item, idx) => (

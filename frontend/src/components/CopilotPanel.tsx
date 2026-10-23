@@ -145,13 +145,25 @@ export const CopilotPanel: React.FC = () => {
       {/* Input Area */}
       <div className="p-4 flex-1 flex flex-col space-y-3">
         {inputMode === 'text' ? (
-          <div className="flex-1 flex flex-col">
-            <label className="text-xs font-medium text-slate-700 mb-1 flex justify-between">
-              <span>Incident / Deviation Material</span>
+          <div className="flex-1 flex flex-col space-y-1.5">
+            <div className="flex justify-between items-center">
+              <label className="text-xs font-medium text-slate-700">
+                Incident / Deviation Material
+              </label>
               <span className="text-[11px] text-slate-400 font-normal">
                 {inputText.length} characters
               </span>
-            </label>
+            </div>
+
+            {(inputText.includes('DEV-2026-0842') || inputText.includes('Atorvastatin')) && (
+              <div className="p-2 bg-amber-50 border border-amber-200 rounded-lg text-amber-900 text-[10px] flex items-center space-x-1.5">
+                <FlaskConical className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                <span>
+                  <strong className="font-semibold">DEMONSTRATION SCENARIO:</strong> Synthetic data for evaluation (Atorvastatin Calcium OOS Impurity D).
+                </span>
+              </div>
+            )}
+
             <textarea
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}

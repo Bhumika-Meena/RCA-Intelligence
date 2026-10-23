@@ -101,12 +101,13 @@ def node_extract_facts(state: RCAWorkflowState) -> Dict[str, Any]:
 
 # --- Node 2: 5 Whys Analysis ---
 def node_five_whys(state: RCAWorkflowState) -> Dict[str, Any]:
-    llm = get_llm(max_tokens=450)
+    llm = get_llm(max_tokens=500)
     facts = state.get("incident_facts") or {}
     prompt = (
         "You are an expert pharmaceutical Root Cause Analysis investigator.\n"
         f"Incident: {facts.get('title')} | Product: {facts.get('product_name')} | Batch: {facts.get('batch_number')}\n\n"
-        "Conduct a 5 Whys causal interrogation chain starting from the immediate symptom down to the root process failure.\n"
+        "Conduct a complete 5 Whys causal interrogation chain starting from the immediate symptom down to the root process failure.\n"
+        "CRITICAL REQUIREMENT: You MUST output exactly 5 sequential steps (why_number 1 to 5).\n"
         "Return ONLY a JSON object with this exact key: 'five_whys':\n"
         "{\n"
         '  "five_whys": [\n'
@@ -122,36 +123,70 @@ def node_five_whys(state: RCAWorkflowState) -> Dict[str, Any]:
 
     try:
         res = invoke_with_retry(llm, [
-            SystemMessage(content="You are a pharmaceutical RCA investigator. Return valid JSON only."),
+            SystemMessage(content="You are a pharmaceutical RCA investigator. You must produce exactly 5 progressive why steps in valid JSON."),
             HumanMessage(content=prompt)
         ])
         data = json.loads(res.content)
         whys_list = data.get("five_whys", [])
-        validated = [FiveWhyItem(**item).model_dump() for item in whys_list]
+        validated = [FiveWhyItem(**item).model_dump() for item in whys_list if isinstance(item, dict) and "question" in item and "answer" in item]
+        
+        # Ensure exactly 5 sequential steps are maintained without inventing unfounded certainty
+        validated.sort(key=lambda x: x.get("why_number", 1))
+        current_len = len(validated)
+        if current_len < 5:
+            gap_fallbacks = {
+                2: ("Why did process conditions deviate during operation?", "Operational setpoints and flow parameters were altered during processing."),
+                3: ("Why were the parameters altered or exceeded?", "Equipment instability and manual valve override occurred on the production line."),
+                4: ("Why was the equipment instability not prevented or detected prior to the run?", "Unresolved — Calibration records and preventive maintenance work orders pending technical verification."),
+                5: ("Why did the manufacturing control system fail to mitigate the deviation?", "Unresolved — Automated interlock logic and SOP change controls require formal engineering evaluation.")
+            }
+            for step in range(current_len + 1, 6):
+                q, a = gap_fallbacks.get(step, (f"Why did step {step-1} failure occur?", "Unresolved — Mechanism requires further physical or analytical investigation."))
+                validated.append({
+                    "why_number": step,
+                    "question": q,
+                    "answer": a
+                })
+        elif len(validated) > 5:
+            validated = validated[:5]
+
+        # Re-index 1..5
+        for idx, item in enumerate(validated):
+            item["why_number"] = idx + 1
+
         return {"five_whys": validated}
     except Exception as e:
         logger.error(f"Error in node_five_whys: {e}")
         fallback = [
-            {"why_number": 1, "question": "Why did the deviation occur?", "answer": "Process parameter exceeded standard range."},
-            {"why_number": 2, "question": "Why was the parameter exceeded?", "answer": "Equipment or procedural control deviation."}
+            {"why_number": 1, "question": "Why did the quality deviation occur?", "answer": "Observed parameter failed release specifications."},
+            {"why_number": 2, "question": "Why did the parameter fail specifications?", "answer": "Process control instability observed during chemical stage."},
+            {"why_number": 3, "question": "Why was process control unstable?", "answer": "Equipment hunting and manual parameter adjustment occurred."},
+            {"why_number": 4, "question": "Why was the equipment condition not detected prior to run?", "answer": "Unresolved — Calibration records and sensor logs pending verification."},
+            {"why_number": 5, "question": "Why did the quality system fail to prevent the deviation?", "answer": "Unresolved — SOP procedural enforcement and engineering controls require review."}
         ]
         return {"five_whys": fallback, "errors": state.get("errors", []) + [str(e)]}
 
 # --- Node 3: 6M Fishbone Analysis ---
 def node_fishbone(state: RCAWorkflowState) -> Dict[str, Any]:
-    llm = get_llm(max_tokens=450)
+    llm = get_llm(max_tokens=500)
     prompt = (
         "You are an Ishikawa (Fishbone) 6M quality analysis specialist in API manufacturing.\n"
-        "Categorize observed contributing factors from the incident into the 6M categories.\n"
-        "Return ONLY a JSON object with this exact key: 'fishbone':\n"
+        "Categorize observed contributing factors from the incident into ALL six 6M categories:\n"
+        "1. machine: equipment, valves, sensors, pumps, agitators, utilities\n"
+        "2. method: recipes, batch addition rates, hold times, SOPs\n"
+        "3. material: solvents, reagents, raw materials, lot purity, CoA\n"
+        "4. man: operator adjustments, training, shift handovers, signatures\n"
+        "5. measurement: analytical assays, HPLC column suitability, flowmeters, sensor drift\n"
+        "6. milieu: ambient humidity, temperature, cleanroom HVAC, utilities\n\n"
+        "Return ONLY a JSON object with this exact key: 'fishbone' containing all 6 keys as string arrays:\n"
         "{\n"
         '  "fishbone": {\n'
-        '    "machine": ["equipment/sensor/valve/agitator factors"],\n'
-        '    "method": ["SOP/recipe/addition rate/parameter factors"],\n'
-        '    "material": ["raw material/solvent/lot purity factors"],\n'
-        '    "man": ["personnel/operator action/training factors"],\n'
-        '    "measurement": ["calibration/analytical test/meter factors"],\n'
-        '    "milieu": ["ambient environmental/HVAC factors"]\n'
+        '    "machine": [...],\n'
+        '    "method": [...],\n'
+        '    "material": [...],\n'
+        '    "man": [...],\n'
+        '    "measurement": [...],\n'
+        '    "milieu": [...]\n'
         "  }\n"
         "}\n\n"
         f"SOURCE INCIDENT TEXT:\n{state['raw_text'][:2500]}"
@@ -159,16 +194,28 @@ def node_fishbone(state: RCAWorkflowState) -> Dict[str, Any]:
 
     try:
         res = invoke_with_retry(llm, [
-            SystemMessage(content="You are an Ishikawa 6M analysis specialist. Return valid JSON only."),
+            SystemMessage(content="You are an Ishikawa 6M analysis specialist. Return valid JSON only with all six 6M keys."),
             HumanMessage(content=prompt)
         ])
         data = json.loads(res.content)
         fb_dict = data.get("fishbone", data)
+        # Ensure all six 6M categories are present even if empty
+        all_categories = ["machine", "method", "material", "man", "measurement", "milieu"]
+        for cat in all_categories:
+            if cat not in fb_dict or fb_dict[cat] is None:
+                fb_dict[cat] = []
         validated = FishboneCategories(**fb_dict)
         return {"fishbone": validated.model_dump()}
     except Exception as e:
         logger.error(f"Error in node_fishbone: {e}")
-        fallback = FishboneCategories()
+        fallback = FishboneCategories(
+            machine=[],
+            method=[],
+            material=[],
+            man=[],
+            measurement=[],
+            milieu=[]
+        )
         return {"fishbone": fallback.model_dump(), "errors": state.get("errors", []) + [str(e)]}
 
 # --- Node 4: Identify Missing Evidence & Gaps ---

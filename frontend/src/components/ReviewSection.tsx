@@ -20,10 +20,16 @@ export const ReviewSection: React.FC = () => {
               7. Qualified Person (QP) Review & Investigation Sign-Off
             </h3>
             <p className="text-[11px] text-slate-500">
-              Formal QA review, disposition comments, and PostgreSQL database persistence
+              Simulated QA review, disposition comments, and PostgreSQL database persistence
             </p>
           </div>
         </div>
+      </div>
+
+      {/* Regulatory Prototype Disclaimer */}
+      <div className="p-2.5 bg-amber-50/90 border border-amber-200 rounded-lg text-amber-900 text-[11px] leading-relaxed">
+        <span className="font-bold">Simulated QA Workflow (Evaluation Prototype): </span>
+        This interface illustrates the Quality Assurance disposition process. Formal pharmaceutical release requires authenticated role-based authorization (RBAC) and cryptographically validated electronic signatures under 21 CFR Part 11, which are intentionally decoupled in this evaluation module.
       </div>
 
       <div className="space-y-3">
