@@ -27,3 +27,57 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
+
+/* Print optimization for investigation summary output */
+@media print {
+  /* Hide navigation, interactive controls, buttons, and screen-only elements */
+  header,
+  nav,
+  button,
+  .no-print,
+  [role="dialog"] {
+    display: none !important;
+  }
+
+  /* Reset layout constraints so multi-page documents print continuously without cutoff */
+  html, body, #root, main, div {
+    overflow: visible !important;
+    max-height: none !important;
+    height: auto !important;
+  }
+
+  body {
+    background-color: #ffffff !important;
+    color: #0f172a !important;
+    font-size: 11pt !important;
+  }
+
+  /* Hide Copilot left sidebar in print output */
+  aside, [class*="lg:w-96"] {
+    display: none !important;
+  }
+
+  /* Expand the investigation workspace across full width */
+  main {
+    display: block !important;
+  }
+
+  /* Cards and sections formatting */
+  .rounded-xl {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    border: 1px solid #cbd5e1 !important;
+    box-shadow: none !important;
+    margin-bottom: 1.25rem !important;
+  }
+
+  /* Form inputs, textareas, and select elements */
+  input, textarea, select {
+    border: 1px solid #cbd5e1 !important;
+    background-color: transparent !important;
+    box-shadow: none !important;
+    color: #0f172a !important;
+    resize: none !important;
+  }
+}
+

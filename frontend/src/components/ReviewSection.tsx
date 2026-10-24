@@ -2,7 +2,7 @@ import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import type { RootState, AppDispatch } from '../store';
 import { setField, saveCurrentInvestigation, clearSaveSuccess } from '../store/rcaSlice';
-import { Award, Save, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Award, Save, CheckCircle2, AlertCircle, Printer } from 'lucide-react';
 
 export const ReviewSection: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -91,6 +91,15 @@ export const ReviewSection: React.FC = () => {
 
         {/* Bottom Save Action Bar */}
         <div className="pt-2 flex items-center justify-end space-x-3">
+          <button
+            type="button"
+            onClick={() => window.print()}
+            className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg transition-colors flex items-center space-x-2 border border-slate-300 shadow-2xs cursor-pointer"
+          >
+            <Printer className="w-4 h-4 text-slate-600" />
+            <span>Print Summary</span>
+          </button>
+
           <button
             type="button"
             onClick={() => dispatch(saveCurrentInvestigation())}

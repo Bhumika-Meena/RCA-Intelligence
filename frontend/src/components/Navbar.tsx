@@ -11,7 +11,8 @@ import {
   ShieldAlert,
   Database,
   Save,
-  RotateCcw
+  RotateCcw,
+  Printer
 } from 'lucide-react';
 
 export const Navbar: React.FC = () => {
@@ -118,6 +119,16 @@ export const Navbar: React.FC = () => {
                 {savedList.length}
               </span>
             )}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => window.print()}
+            title="Print Investigation Summary"
+            className="inline-flex items-center px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-700 bg-slate-50 border border-slate-300 hover:bg-slate-100 transition-colors shadow-2xs cursor-pointer"
+          >
+            <Printer className="w-3.5 h-3.5 mr-1.5 text-slate-500" />
+            Print Summary
           </button>
 
           <button
